@@ -92,6 +92,7 @@ namespace ZHash
     -h, -hide       : set the Hidden + System attributes on the hashes file
     -a, -abs        : output absolute instead of relative (default) paths
     -q, -quiet      : quiet mode, suppresses console output
+    -d, -debug      : print some debug info
 
   NOTES:
   > Multiple files, folders, masks and -x exclusions can be provided

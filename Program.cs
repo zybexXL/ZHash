@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -10,7 +11,7 @@ namespace ZHash
 {
     class Program
     {
-        static Version version = new Version(1, 0, 0);
+        static Version version = new Version(1, 0, 1);
         static ConsoleColor DefaultColor = Console.ForegroundColor;
 
         static bool quiet;
@@ -84,7 +85,7 @@ namespace ZHash
                     if (item == null || hashdata == null)
                         item = new ZHashItem($"Hashing failed: {file.FullName}");
                     if (!quiet || Console.IsOutputRedirected)
-                        PrintLine(item.ToString(), item.isInvalid ? ConsoleColor.Red : DefaultColor);
+                        PrintLine(item.ToString(), item.isInvalid ? ConsoleColor.Red : ConsoleColor.Blue);
                 }
 
             if (!quiet && count == 0)
@@ -176,10 +177,20 @@ namespace ZHash
         {
             try
             {
+                FileInfo fi = new FileInfo(path);
+                Stopwatch sw = DEBUG ? Stopwatch.StartNew() : null;
                 HashAlgorithm hasher = GetHasher(algo);
                 using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1 << 20, true))
                     hasher.ComputeHash(stream);
 
+                sw?.Stop();
+                if (DEBUG)
+                {
+                    long KB = fi.Length / 1024;
+                    double secs = sw.ElapsedMilliseconds/1000.0;
+                    if (secs == 0) secs = 1;
+                    PrintDebug($"\n** Hashed {KB} KB in {secs:f2} seconds = {KB/secs:f2} KB/sec");
+                }
                 return hasher.Hash;
             }
             catch { }
