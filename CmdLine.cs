@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ZHash
 {
-    public enum CmdOption { Help, Compute, Update, Verify, Stdin, Debug, New, Refresh, Exclude, Subs, File, Local, Purge, Hide, Absolute, Quiet, MD5, SHA1, SHA256 }
+    public enum CmdOption { Help, Compute, Update, Verify, Stdin, Register, Debug, Wait, New, Refresh, Exclude, Subs, File, Local, Purge, Hide, Absolute, Quiet, MD5, SHA1, SHA256 }
 
     internal static class CmdLine
     {
@@ -19,10 +19,12 @@ namespace ZHash
         public static int countOptions(params CmdOption[] options) => options.Count(o => hasOption(o));
         public static CmdOption FirstOrDefault(params CmdOption[] options) => options.FirstOrDefault(o => hasOption(o));
 
+        public static CmdOption RunMode = CmdOption.Help;
+
         static Dictionary<string, string> Aliases = new Dictionary<string, string>() {
             { "?", "help" }, { "v", "verify" }, { "u", "update" }, { "c", "compute" }, { "i", "stdin" },
             { "s", "subs" }, {"x", "Exclude" }, { "f", "File" }, { "l", "local" }, { "q", "quiet" }, 
-            { "n", "new" }, { "r", "refresh" },
+            { "n", "new" }, { "r", "refresh" }, { "w", "wait" }, { "reg", "register" },
             { "p", "purge" }, { "h", "hide" }, { "a", "absolute" }, { "abs", "absolute" }, { "d", "debug" },
             { "1", "sha1" }, { "2", "sha256" }, { "m", "md5" }, { "5", "md5" },
         };
@@ -66,9 +68,10 @@ namespace ZHash
 
   MODE:
     -c, -compute    : compute hashes of all input files (default)
-    -u, -update     : Update hashes in zhash.chk, same as -c -f zhash.chk
-    -v, -verify     : verify hashes of files already in zhash.chk
+    -u, -update     : Update hashes in zhash.zhs, same as -c -f zhash.zhs
+    -v, -verify     : verify hashes of files already in zhash.zhs
     -i, -stdin      : compute hash for stdin data; input files are ignored
+        -reg [.zhs] : register shell extension to verify .zhs files
 
   HASH FUNCTION:
     -1, -sha1       : use SHA1 hash function, 160 bits (default)
@@ -82,28 +85,33 @@ namespace ZHash
    
     -x <mask>       : exclude files matching given file mask
     -s, -subs       : process subfolders
-    -n, -new        : process only new files (files not in zhash.chk)
-    -r, -refresh    : process only files already in zhash.chk
+    -n, -new        : process only new files (files not in zhash.zhs)
+    -r, -refresh    : process only files already in zhash.zhs
 
   OUTPUT:
-    -f <zhash.chk>  : hashes filename. Outputs to console if not provided
+    -f <zhash.zhs>  : hashes filename. Outputs to console if not provided
     -l, -local      : output hashes file on same folder as source file(s)
     -p, -purge      : remove non-existant files from the hashes file
     -h, -hide       : set the Hidden + System attributes on the hashes file
     -a, -abs        : output absolute instead of relative (default) paths
     -q, -quiet      : quiet mode, suppresses console output
     -d, -debug      : print some debug info
+    -w, -wait       : wait for keypress before exiting
 
   NOTES:
   > Multiple files, folders, masks and -x exclusions can be provided
   > Compute mode outputs to console unless -f is given
-  > Update mode outputs to file given with -f (default: zhash.chk)
-  > Verify mode reads from file given with -f (default: zhash.chk)
+  > Update mode outputs to file given with -f (default: zhash.zhs)
+  > Verify mode reads from file given with -f (default: zhash.zhs)
   > Options -r and -n are ignored in Verify mode
   > Stdin mode computes the hash for STDIN data and outputs to console.
     Input paths and Output options are ignored. Input can be piped.
   > Hashes file is created in the current folder unless -local is used
     or a full path is given with -f option
+  > The -reg option registers the an extension to run a ZHash verify.
+    An alternate extension can be registered with '-reg .ext'
+    Additional options can be included on the registration. Example:
+      zhash -reg .chk -w -s 
 ");
         }
 
@@ -147,24 +155,29 @@ namespace ZHash
 
         static bool ValidateArgs()
         {
-            int funcs = countOptions(CmdOption.MD5, CmdOption.SHA1, CmdOption.SHA256);
-            int modes = countOptions(CmdOption.Verify, CmdOption.Update, CmdOption.Compute, CmdOption.Stdin);
-            
-            //default options
-            if (modes == 0) options[CmdOption.Compute] = "true";
-            if (funcs == 0) options[CmdOption.SHA1] = "true";
+            CmdOption[] modes = new CmdOption[] { CmdOption.Compute, CmdOption.Update, CmdOption.Verify, CmdOption.Stdin, CmdOption.Register };
+            CmdOption[] funcs = new CmdOption[] { CmdOption.SHA1, CmdOption.SHA256, CmdOption.MD5, };
 
+            int nFuncs = countOptions(funcs);
+            int nModes = countOptions(modes);
+
+            //default options
+            RunMode = FirstOrDefault(modes);
+            if (nModes == 0) options[CmdOption.Compute] = "true";
+            if (nFuncs == 0 && RunMode != CmdOption.Register)
+                options[CmdOption.SHA1] = "true";
+            
             // default input path
-            if (Paths.Count == 0) Paths.Add(".");
+            if (Paths.Count == 0) Paths.Add(RunMode == CmdOption.Register ? ".zhs" : ".");
             
             // default hash file
             if (!hasOption(CmdOption.File) && !hasOption(CmdOption.Compute))
-                options[CmdOption.File] = "zhash.chk";
+                options[CmdOption.File] = "zhash.zhs";
             
             // syntax errors
-            if (funcs > 1)
+            if (nFuncs > 1)
                 Console.WriteLine("Only one hash function supported per run");
-            else if (modes > 1)
+            else if (nModes > 1)
                 Console.WriteLine("Please select only one mode");
             else
                 return true;

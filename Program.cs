@@ -1,17 +1,20 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace ZHash
 {
     class Program
     {
-        static Version version = new Version(1, 0, 1);
+        static Version version = new Version(1, 0, 2);
         static ConsoleColor DefaultColor = Console.ForegroundColor;
 
         static bool quiet;
@@ -26,13 +29,13 @@ namespace ZHash
             if (!CmdLine.Parse(args, out int code))
                 return code;
 
-            DEBUG = CmdLine.hasOption(CmdOption.Debug);
             algo = CmdLine.FirstOrDefault(CmdOption.SHA1, CmdOption.SHA256, CmdOption.MD5);
             quiet = CmdLine.hasOption(CmdOption.Quiet) || Console.IsOutputRedirected;
+            DEBUG = CmdLine.hasOption(CmdOption.Debug);
+
             manager = new ZHashManager();
 
-            CmdOption mode = CmdLine.FirstOrDefault(CmdOption.Compute, CmdOption.Update, CmdOption.Verify, CmdOption.Stdin);
-            switch (mode)
+            switch (CmdLine.RunMode)
             {
                 case CmdOption.Compute:
                 case CmdOption.Update:
@@ -46,10 +49,21 @@ namespace ZHash
                 case CmdOption.Stdin:
                     HashStdin();
                     break;
+
+                case CmdOption.Register:
+                    Register();
+                    break;
+
             }
 
             manager.Close();
             Console.ResetColor();
+
+            if (CmdLine.hasOption(CmdOption.Wait) && CmdLine.RunMode != CmdOption.Register)
+            {
+                Console.WriteLine("\nPress any key to exit...");
+                Console.ReadKey();
+            }
             return 0;
         }
 
@@ -195,6 +209,56 @@ namespace ZHash
             }
             catch { }
             return null;
+        }
+
+        static void Register()
+        {
+            string ext = CmdLine.Paths.Count > 0 ? CmdLine.Paths[0] : ".zhs";
+
+            if (CmdLine.Paths.Count > 1)
+                Console.WriteLine("Please register only one extension at a time");
+            else if (!Regex.IsMatch(ext, @"^\.?\w+$"))
+                Console.WriteLine($"Cannot register invalid extension: {ext}");
+            else
+            {
+                try
+                {
+                    if (!ext.StartsWith(".")) ext = "." + ext;
+                    string zhash = Assembly.GetExecutingAssembly().Location;
+                    string args = "-v -f \"%1\"";
+                    string progID = "ZHashFile";
+
+                    foreach (CmdOption opt in Enum.GetValues(typeof(CmdOption)))
+                        if (CmdLine.hasOption(opt) && opt != CmdOption.File && opt != CmdOption.Register)
+                            args = $"{args} -{opt.ToString().ToLower()}";
+
+                    foreach (var exclude in CmdLine.Excludes)
+                    {
+                        string value = exclude.Contains(' ') ? $"\"{exclude}\"" : exclude;
+                        args = $"{args} -x {value}";
+                    }
+
+                    using (RegistryKey root = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64))
+                    {
+                        using (var key = root.CreateSubKey($"Software\\Classes\\{ext}\\OpenWithProgIDs", true))
+                            key.SetValue($"{progID}", new byte[0], RegistryValueKind.None);
+                        using (var key = root.CreateSubKey($"Software\\Classes\\{progID}", true))
+                            key.SetValue("", "ZHash store");
+                        using (var key = root.CreateSubKey($"Software\\Classes\\{progID}\\DefaultIcon", true))
+                            key.SetValue("", $"{zhash},0");
+                        using (var key = root.CreateSubKey($"Software\\Classes\\{progID}\\Shell\\Open\\Command", true))
+                            key.SetValue("", $"\"{zhash}\" {args}");
+                    }
+
+                    // notify windows
+                    Util.SHChangeNotify(0x08000000, 0x0000, IntPtr.Zero, IntPtr.Zero);
+                    Console.WriteLine($"Extension registered:\n{ext} = \"{zhash}\" {args}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to register extension '{ext}':\n{ex.Message}");
+                }
+            }
         }
     }
 }

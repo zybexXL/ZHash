@@ -31,7 +31,7 @@ namespace ZHash
 
             dbPath = CmdLine.getOption(CmdOption.File);
             dbless = string.IsNullOrEmpty(dbPath);
-            if(dbless) dbPath = "zhash.chk";
+            if(dbless) dbPath = "zhash.zhs";
 
             singleDb = dbless || Regex.IsMatch(dbPath, @"[/\\:]");
             dbPath = Path.GetFullPath(dbPath);
