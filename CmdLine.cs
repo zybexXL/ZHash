@@ -70,10 +70,10 @@ namespace ZHash
 
   MODE:
     -c, -compute    : compute hashes of all input files (default)
-    -u, -update     : Update hashes in zhash.zhs, same as -c -f zhash.zhs
-    -v, -verify     : verify hashes of files already in zhash.zhs
+    -u, -update     : Update hashes in zhash.zh, same as -c -f zhash.zh
+    -v, -verify     : verify hashes of files already in zhash.zh
     -i, -stdin      : compute hash for stdin data; input files are ignored
-        -reg [.zhs] : register shell extension to verify .zhs files
+        -reg [.ext] : register shell extension to verify .zh files
 
   HASH FUNCTION:
     -1, -sha1       : use SHA1 hash function, 160 bits (default)
@@ -87,11 +87,11 @@ namespace ZHash
    
     -x <mask>       : exclude files matching given file mask
     -s, -subs       : process subfolders
-    -n, -new        : process only new files (files not in zhash.zhs)
-    -r, -refresh    : process only files already in zhash.zhs
+    -n, -new        : process only new files (files not in zhash.zh)
+    -r, -refresh    : process only files already in zhash.zh
 
   OUTPUT:
-    -f <zhash.zhs>  : hashes filename. Outputs to console if not provided
+    -f <zhash.zh>   : hashes filename. Outputs to console if not provided
     -l, -local      : output hashes file on same folder as source file(s)
     -p, -purge      : remove non-existant files from the hashes file
     -h, -hide       : set the Hidden attribute on the hashes file
@@ -104,8 +104,8 @@ namespace ZHash
   NOTES:
   > Multiple files, folders, masks and -x exclusions can be provided
   > Compute mode outputs to console unless -f is given
-  > Update mode outputs to file given with -f (default: zhash.zhs)
-  > Verify mode reads from file given with -f (default: zhash.zhs)
+  > Update mode outputs to file given with -f (default: zhash.zh)
+  > Verify mode reads from file given with -f (default: zhash.zh)
   > Options -r and -n are ignored in Verify mode
   > Stdin mode computes the hash for STDIN data and outputs to console.
     Input paths and Output options are ignored. Input can be piped.
@@ -116,8 +116,8 @@ namespace ZHash
     Additional options can be included on the registration. Example:
       zhash -reg .chk -w -s 
 ";
-            help = help.Replace("zhash.zhs", Constants.ZHFILE);
-            help = help.Replace(".zhs", Constants.ZHEXT);
+            help = help.Replace("zhash.zh", Constants.ZHFILE);
+            help = help.Replace(".zh", Constants.ZHEXT);
             Console.WriteLine(help);
         }
 
