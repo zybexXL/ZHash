@@ -14,7 +14,7 @@ namespace ZHash
 {
     class Program
     {
-        static Version version = new Version(1, 0, 2);
+        static Version version = new Version(1, 0, 3);
         static ConsoleColor DefaultColor = Console.ForegroundColor;
 
         static bool quiet;

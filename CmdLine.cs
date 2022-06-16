@@ -8,7 +8,9 @@ using System.Threading.Tasks;
 
 namespace ZHash
 {
-    public enum CmdOption { Help, Compute, Update, Verify, Stdin, Register, Debug, Wait, New, Refresh, Exclude, Subs, File, Local, Purge, Hide, Absolute, Quiet, MD5, SHA1, SHA256 }
+    public enum CmdOption { Help, Compute, Update, Verify, Stdin, Register,
+        Debug, Wait, New, Refresh, Exclude, Subs, File, Local, Purge,
+        Hide, Syshide, Absolute, Quiet, MD5, SHA1, SHA256 }
 
     internal static class CmdLine
     {
@@ -25,7 +27,7 @@ namespace ZHash
             { "?", "help" }, { "v", "verify" }, { "u", "update" }, { "c", "compute" }, { "i", "stdin" },
             { "s", "subs" }, {"x", "Exclude" }, { "f", "File" }, { "l", "local" }, { "q", "quiet" }, 
             { "n", "new" }, { "r", "refresh" }, { "w", "wait" }, { "reg", "register" },
-            { "p", "purge" }, { "h", "hide" }, { "a", "absolute" }, { "abs", "absolute" }, { "d", "debug" },
+            { "p", "purge" }, { "h", "hide" }, { "hs", "syshide" },{ "a", "absolute" }, { "abs", "absolute" }, { "d", "debug" },
             { "1", "sha1" }, { "2", "sha256" }, { "m", "md5" }, { "5", "md5" },
         };
 
@@ -92,7 +94,8 @@ namespace ZHash
     -f <zhash.zhs>  : hashes filename. Outputs to console if not provided
     -l, -local      : output hashes file on same folder as source file(s)
     -p, -purge      : remove non-existant files from the hashes file
-    -h, -hide       : set the Hidden + System attributes on the hashes file
+    -h, -hide       : set the Hidden attribute on the hashes file
+    -hs, -syshide   : set the Hidden + System attributes on the hashes file
     -a, -abs        : output absolute instead of relative (default) paths
     -q, -quiet      : quiet mode, suppresses console output
     -d, -debug      : print some debug info

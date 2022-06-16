@@ -13,6 +13,7 @@ namespace ZHash
         bool dbLocal;
         bool dbPurge;
         bool dbHide;
+        bool dbSysHide; 
         bool absolutePaths;
         bool recurse;
         public string dbPath;
@@ -26,6 +27,7 @@ namespace ZHash
             dbLocal = CmdLine.hasOption(CmdOption.Local);
             dbPurge = CmdLine.hasOption(CmdOption.Purge);
             absolutePaths = CmdLine.hasOption(CmdOption.Absolute);
+            dbSysHide = CmdLine.hasOption(CmdOption.Syshide);
             dbHide = CmdLine.hasOption(CmdOption.Hide);
             recurse = CmdLine.hasOption(CmdOption.Subs);
 
@@ -95,7 +97,7 @@ namespace ZHash
             if (dbPurge)
                 currentDb.Purge();
             if (currentDb.isDirty)
-                currentDb.Save(dbHide);
+                currentDb.Save(dbHide, dbSysHide);
 
             currentDb = null;
         }

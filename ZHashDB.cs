@@ -83,9 +83,9 @@ namespace ZHash
                 isDirty = true;
         }
 
-        public void Save(bool hide = false) { Save(dbPath, hide); }
+        public void Save(bool hide = false, bool syshide = false) { Save(dbPath, hide, syshide); }
 
-        public bool Save(string hashfile, bool hide = false)
+        public bool Save(string hashfile, bool hide = false, bool syshide = false)
         {
             try
             {
@@ -102,8 +102,10 @@ namespace ZHash
                 }
                 File.WriteAllText(dbPath, sb.ToString());
 
-                if (hide)
-                    File.SetAttributes(dbPath, FileAttributes.Hidden | FileAttributes.Archive);
+                FileAttributes attr = FileAttributes.Archive;
+                if (hide) attr |= FileAttributes.Hidden;
+                if (syshide) attr |= FileAttributes.System;
+                File.SetAttributes(dbPath, FileAttributes.Hidden | FileAttributes.Archive);
 
                 Program.PrintDebug($":: Wrote {hashes.Count} entried to {dbPath}");
                 isDirty = false;
