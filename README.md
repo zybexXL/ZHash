@@ -6,7 +6,7 @@ File hashing command-line tool with many features:
 - Multiple file/folders/masks and exclusion masks
 - Recursive subfolder processing
 - Single hash DB file or one file per subfolder
-
+- Extension shell handler to verify files on double-click
 
 # Usage
 ```
@@ -14,9 +14,10 @@ File hashing command-line tool with many features:
 
   MODE:
     -c, -compute    : compute hashes of all input files (default)
-    -u, -update     : Update hashes in zhash.chk, same as -c -f zhash.chk
-    -v, -verify     : verify hashes of files already in zhash.chk
+    -u, -update     : Update hashes in zhash.zhs, same as -c -f zhash.zhs
+    -v, -verify     : verify hashes of files already in zhash.zhs
     -i, -stdin      : compute hash for stdin data; input files are ignored
+        -reg [.zhs] : register shell extension to verify .zhs files
 
   HASH FUNCTION:
     -1, -sha1       : use SHA1 hash function, 160 bits (default)
@@ -30,25 +31,31 @@ File hashing command-line tool with many features:
    
     -x <mask>       : exclude files matching given file mask
     -s, -subs       : process subfolders
-    -n, -new        : process only new files (files not in zhash.chk)
-    -r, -refresh    : process only files already in zhash.chk
+    -n, -new        : process only new files (files not in zhash.zhs)
+    -r, -refresh    : process only files already in zhash.zhs
 
   OUTPUT:
-    -f <zhash.chk>  : hashes filename. Outputs to console if not provided
+    -f <zhash.zhs>  : hashes filename. Outputs to console if not provided
     -l, -local      : output hashes file on same folder as source file(s)
     -p, -purge      : remove non-existant files from the hashes file
     -h, -hide       : set the Hidden + System attributes on the hashes file
     -a, -abs        : output absolute instead of relative (default) paths
     -q, -quiet      : quiet mode, suppresses console output
+    -d, -debug      : print some debug info
+    -w, -wait       : wait for keypress before exiting
 
   NOTES:
   > Multiple files, folders, masks and -x exclusions can be provided
   > Compute mode outputs to console unless -f is given
-  > Update mode outputs to file given with -f (default: zhash.chk)
-  > Verify mode reads from file given with -f (default: zhash.chk)
+  > Update mode outputs to file given with -f (default: zhash.zhs)
+  > Verify mode reads from file given with -f (default: zhash.zhs)
   > Options -r and -n are ignored in Verify mode
   > Stdin mode computes the hash for STDIN data and outputs to console.
     Input paths and Output options are ignored. Input can be piped.
   > Hashes file is created in the current folder unless -local is used
     or a full path is given with -f option
+  > The -reg option registers the an extension to run a ZHash verify.
+    An alternate extension can be registered with '-reg .ext'
+    Additional options can be included on the registration. Example:
+      zhash -reg .chk -w -s 
 ```
