@@ -213,7 +213,7 @@ namespace ZHash
 
         static void Register()
         {
-            string ext = CmdLine.Paths.Count > 0 ? CmdLine.Paths[0] : ".zhs";
+            string ext = CmdLine.Paths.Count > 0 ? CmdLine.Paths[0] : Constants.ZHEXT;
 
             if (CmdLine.Paths.Count > 1)
                 Console.WriteLine("Please register only one extension at a time");

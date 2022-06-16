@@ -62,7 +62,7 @@ namespace ZHash
 
         static void Usage()
         {
-            Console.WriteLine(@"ZHash calculates or verifies checksum hashes for one or more files
+            string help = @"ZHash calculates or verifies checksum hashes for one or more files
 
   USAGE: ZHash [-options] [<file>|<folder>|<mask>]
 
@@ -112,7 +112,10 @@ namespace ZHash
     An alternate extension can be registered with '-reg .ext'
     Additional options can be included on the registration. Example:
       zhash -reg .chk -w -s 
-");
+";
+            help = help.Replace("zhash.zhs", Constants.ZHFILE);
+            help = help.Replace(".zhs", Constants.ZHEXT);
+            Console.WriteLine(help);
         }
 
         static bool ParseArgs(string[] args)
@@ -169,11 +172,11 @@ namespace ZHash
             RunMode = FirstOrDefault(modes);
 
             // default input path
-            if (Paths.Count == 0) Paths.Add(RunMode == CmdOption.Register ? ".zhs" : ".");
+            if (Paths.Count == 0) Paths.Add(RunMode == CmdOption.Register ? Constants.ZHEXT : ".");
             
             // default hash file
             if (!hasOption(CmdOption.File) && !hasOption(CmdOption.Compute))
-                options[CmdOption.File] = "zhash.zhs";
+                options[CmdOption.File] = Constants.ZHFILE;
             
             // syntax errors
             if (nFuncs > 1)

@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CmdLine.cs" />
+    <Compile Include="Constants.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="ZHashItem.cs" />
     <Compile Include="ZHashDB.cs" />
