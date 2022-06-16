@@ -162,11 +162,12 @@ namespace ZHash
             int nModes = countOptions(modes);
 
             //default options
-            RunMode = FirstOrDefault(modes);
             if (nModes == 0) options[CmdOption.Compute] = "true";
-            if (nFuncs == 0 && RunMode != CmdOption.Register)
+            if (nFuncs == 0 && !hasOption(CmdOption.Register))
                 options[CmdOption.SHA1] = "true";
-            
+
+            RunMode = FirstOrDefault(modes);
+
             // default input path
             if (Paths.Count == 0) Paths.Add(RunMode == CmdOption.Register ? ".zhs" : ".");
             
