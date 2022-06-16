@@ -9,6 +9,9 @@ File hashing command-line tool with many features:
 - Extension shell handler to verify files on double-click
 
 # Usage
+
+Run ZHash -? to get the following help text:
+
 ```
   USAGE: ZHash [-options] [<file>|<folder>|<mask>]
 
