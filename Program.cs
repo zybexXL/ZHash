@@ -14,7 +14,7 @@ namespace ZHash
 {
     class Program
     {
-        static Version version = new Version(1, 0, 3);
+        static Version version = new Version(1, 0, 4);
         static ConsoleColor DefaultColor = Console.ForegroundColor;
 
         static bool quiet;
@@ -94,12 +94,12 @@ namespace ZHash
 
                     count++;
                     if (!quiet) Print($"  ...  {file.Name}\r");
-                    byte[] hashdata = ComputeHash(file.FullName);
+                    byte[] hashdata = ComputeHash(file.FullName, algo);
                     ZHashItem item = manager.Update(file.FullName, algo.ToString(), hashdata);
                     if (item == null || hashdata == null)
                         item = new ZHashItem($"Hashing failed: {file.FullName}");
                     if (!quiet || Console.IsOutputRedirected)
-                        PrintLine(item.ToString(), item.isInvalid ? ConsoleColor.Red : ConsoleColor.Blue);
+                        PrintLine(item.ToString(), item.isInvalid ? ConsoleColor.Red : ConsoleColor.Cyan);
                 }
 
             if (!quiet && count == 0)
@@ -119,13 +119,15 @@ namespace ZHash
                     string rel = Util.GetRelativePath(Environment.CurrentDirectory, file.FullName);
                     ZHashItem hashItem = manager.GetHash(file.FullName);
                     if (hashItem?.hashData == null)
-                        PrintLine($"(new)  {rel}", ConsoleColor.DarkGray);
+                        PrintLine($"(new)  {rel}", ConsoleColor.Gray);
+                    else if (!Enum.TryParse(hashItem.algorithm, true, out CmdOption vAlgo) || GetHasher(vAlgo)==null)
+                        PrintLine($"ERROR: Unsupported hash '{hashItem.algorithm}': {rel}", ConsoleColor.Magenta);
                     else
                     {
                         if (!quiet) Print($"  ...  {file.Name}\r", ConsoleColor.DarkGray);
-                        byte[] hashdata = ComputeHash(file.FullName);
+                        byte[] hashdata = ComputeHash(file.FullName, vAlgo);
                         if (hashdata == null)
-                            PrintLine($"ERROR  {rel}", ConsoleColor.Magenta);
+                            PrintLine($"ERROR: Could not hash: {rel}", ConsoleColor.Magenta);
                         else
                         {
                             if (hashdata.SequenceEqual(hashItem.hashData))
@@ -187,7 +189,7 @@ namespace ZHash
             catch { }
         }
 
-        static byte[] ComputeHash(string path)
+        static byte[] ComputeHash(string path, CmdOption algo)
         {
             try
             {
