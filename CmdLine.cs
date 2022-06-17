@@ -112,10 +112,11 @@ namespace ZHash
     Input paths and Output options are ignored. Input can be piped.
   > Hashes file is created in the current folder unless -local is used
     or a full path is given with -f option
-  > The -reg option registers the an extension to run a ZHash verify.
-    An alternate extension can be registered with '-reg .ext'
-    Additional options can be included on the registration. Example:
-      zhash -reg .chk -wi -s
+  > The -reg option registers an extension to run a ZHash verify when clicked.
+    The default .zh extension is registered unless a different one is provided
+    as an argument. Other options can be added to the registration command,
+    they will be included when running the registered Verify command.
+    Example: zhash -reg .chk -wi -s
 ";
             help = help.Replace("zhash.zh", Constants.ZHFILE);
             help = help.Replace(".zh", Constants.ZHEXT);
