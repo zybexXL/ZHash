@@ -8,7 +8,7 @@ File hashing command-line tool with many features:
 - Single hash DB file or one file per subfolder
 - Extension shell handler to verify files on double-click
 
-# Usage
+## Usage
 
 Run ZHash -? to get the following help text:
 
@@ -47,19 +47,18 @@ Run ZHash -? to get the following help text:
     -q, -quiet      : quiet mode, suppresses console output
     -d, -debug      : print some debug info
     -w, -wait       : wait for keypress before exiting
-
-  NOTES:
-  > Multiple files, folders, masks and -x exclusions can be provided
-  > Compute mode outputs to console unless -f is given
-  > Update mode outputs to file given with -f (default: zhash.zh)
-  > Verify mode reads from file given with -f (default: zhash.zh)
-  > Options -r and -n are ignored in Verify mode
-  > Stdin mode computes the hash for STDIN data and outputs to console.
-    Input paths and Output options are ignored. Input can be piped.
-  > Hashes file is created in the current folder unless -local is used
-    or a full path is given with -f option
-  > The -reg option registers the an extension to run a ZHash verify.
-    An alternate extension can be registered with '-reg .ext'
-    Additional options can be included on the registration. Example:
-      zhash -reg .chk -w -s 
+    -wi, -waitif    : wait for keypress before exiting IF there's an error
 ```
+
+- Multiple files, folders, masks and -x exclusions can be provided
+- Compute mode outputs to console unless -f is given
+- Update mode outputs to file given with -f (default: zhash.zh)
+- Verify mode reads from file given with -f (default: zhash.zh)
+- Options -r and -n are ignored in Verify mode
+- Stdin mode computes the hash for STDIN data and outputs to console. Input paths and Output options are ignored. Input can be piped.
+- Hashes file is created in the current folder unless -local is used or a full path is given with -f option
+
+## Register file extension
+The -reg option registers an extension to run a ZHash verify on double-clicking the file. The default .zh extension is registered unless a different one is provided as an argument. Additional options can also be included in the registration command - they will be included when running the Verify command.
+
+Example: `zhash -reg .chk -wi -s` registers the .chk extension so that double-clicking on a .chk file runs `zhash -verify -wi -s -f %1`
