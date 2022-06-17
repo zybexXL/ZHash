@@ -59,6 +59,6 @@ Run ZHash -? to get the following help text:
 - Hashes file is created in the current folder unless -local is used or a full path is given with -f option
 
 ## Register file extension
-The -reg option registers an extension to run a ZHash verify on double-clicking the file. The default .zh extension is registered unless a different one is provided as an argument. Additional options can also be included in the registration command - they will be included when running the Verify command.
+The -reg option registers an extension to run a ZHash verify on double-clicking the file. The default .zh extension is registered unless a different one is provided as an argument. Additional options can be added to the registration command; they will be included when running the registered Verify command.
 
 Example: `zhash -reg .chk -wi -s` registers the .chk extension so that double-clicking on a .chk file runs `zhash -verify -wi -s -f %1`
