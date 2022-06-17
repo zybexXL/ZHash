@@ -14,7 +14,7 @@ namespace ZHash
 {
     class Program
     {
-        static Version version = new Version(1, 0, 4);
+        static Version version = new Version(1, 0, 5);
         static ConsoleColor DefaultColor = Console.ForegroundColor;
 
         static bool quiet;
@@ -25,50 +25,52 @@ namespace ZHash
 
         static int Main(string[] args)
         {
+            int result = 0;
             Console.WriteLine($"ZHash v{version} - Checksum tool (c) 2022 Pedro Fonseca\n");
-            if (!CmdLine.Parse(args, out int code))
-                return code;
-
-            algo = CmdLine.FirstOrDefault(CmdOption.SHA1, CmdOption.SHA256, CmdOption.MD5);
-            quiet = CmdLine.hasOption(CmdOption.Quiet) || Console.IsOutputRedirected;
-            DEBUG = CmdLine.hasOption(CmdOption.Debug);
-
-            manager = new ZHashManager();
-
-            switch (CmdLine.RunMode)
+            if (CmdLine.Parse(args, out result))
             {
-                case CmdOption.Compute:
-                case CmdOption.Update:
-                    Compute();
-                    break;
 
-                case CmdOption.Verify:
-                    Verify();
-                    break;
-                
-                case CmdOption.Stdin:
-                    HashStdin();
-                    break;
+                algo = CmdLine.FirstOrDefault(CmdOption.SHA1, CmdOption.SHA256, CmdOption.MD5);
+                quiet = CmdLine.hasOption(CmdOption.Quiet) || Console.IsOutputRedirected;
+                DEBUG = CmdLine.hasOption(CmdOption.Debug);
 
-                case CmdOption.Register:
-                    Register();
-                    break;
+                manager = new ZHashManager();
 
+                switch (CmdLine.RunMode)
+                {
+                    case CmdOption.Compute:
+                    case CmdOption.Update:
+                        result = Compute();
+                        break;
+
+                    case CmdOption.Verify:
+                        result = Verify();
+                        break;
+
+                    case CmdOption.Stdin:
+                        result = HashStdin();
+                        break;
+
+                    case CmdOption.Register:
+                        result = Register();
+                        break;
+
+                }
+                manager.Close();
+                Console.ResetColor();
             }
 
-            manager.Close();
-            Console.ResetColor();
-
-            if (CmdLine.hasOption(CmdOption.Wait) && CmdLine.RunMode != CmdOption.Register)
+            if (CmdLine.hasOption(CmdOption.Wait) || (CmdLine.hasOption(CmdOption.WaitIf) && result != 0))
             {
                 Console.WriteLine("\nPress any key to exit...");
                 Console.ReadKey();
             }
-            return 0;
+            return result;
         }
 
-        static void Compute()
+        static int Compute()
         {
+            int result = 0;
             int count = 0;
             string dbName = Path.GetFileName(manager.dbPath ?? "").ToLower();
             bool onlyNew = CmdLine.hasOption(CmdOption.New);
@@ -82,13 +84,13 @@ namespace ZHash
 
                     if (onlyNew && manager.GetHash(file.FullName) != null)
                     {
-                        PrintDebug($"** [-n] Skpping {file.FullName}");
+                        PrintDebug($"** [-n] Skipping {file.FullName}");
                         continue;
                     }
 
                     if (refresh && manager.GetHash(file.FullName) == null)
                     {
-                        PrintDebug($"** [-r] Skpping {file.FullName}");
+                        PrintDebug($"** [-r] Skipping {file.FullName}");
                         continue;
                     }
 
@@ -97,17 +99,26 @@ namespace ZHash
                     byte[] hashdata = ComputeHash(file.FullName, algo);
                     ZHashItem item = manager.Update(file.FullName, algo.ToString(), hashdata);
                     if (item == null || hashdata == null)
+                    {
                         item = new ZHashItem($"Hashing failed: {file.FullName}");
+                        result = 1;
+                    }
                     if (!quiet || Console.IsOutputRedirected)
                         PrintLine(item.ToString(), item.isInvalid ? ConsoleColor.Red : ConsoleColor.Cyan);
                 }
 
             if (!quiet && count == 0)
-                PrintLine("No matching files found.");
+            {
+                PrintLine("No matching files found, nothing done.");
+                result = 8;
+            }
+
+            return result;
         }
 
-        static void Verify()
+        static int Verify()
         {
+            int result = 0;
             int count = 0;
             string dbName = Path.GetFileName(manager.dbPath ?? "").ToLower();
             foreach (var path in CmdLine.Paths)
@@ -120,26 +131,40 @@ namespace ZHash
                     ZHashItem hashItem = manager.GetHash(file.FullName);
                     if (hashItem?.hashData == null)
                         PrintLine($"(new)  {rel}", ConsoleColor.Gray);
-                    else if (!Enum.TryParse(hashItem.algorithm, true, out CmdOption vAlgo) || GetHasher(vAlgo)==null)
+                    else if (!Enum.TryParse(hashItem.algorithm, true, out CmdOption vAlgo) || GetHasher(vAlgo) == null)
+                    {
                         PrintLine($"ERROR: Unsupported hash '{hashItem.algorithm}': {rel}", ConsoleColor.Magenta);
+                        result = 6;
+                    }
                     else
                     {
                         if (!quiet) Print($"  ...  {file.Name}\r", ConsoleColor.DarkGray);
                         byte[] hashdata = ComputeHash(file.FullName, vAlgo);
                         if (hashdata == null)
+                        {
                             PrintLine($"ERROR: Could not hash: {rel}", ConsoleColor.Magenta);
+                            result = 1;
+                        }
                         else
                         {
                             if (hashdata.SequenceEqual(hashItem.hashData))
                                 PrintLine($"  OK!  {rel}", ConsoleColor.Green);
                             else
+                            {
                                 PrintLine($"FAIL!  {rel}", ConsoleColor.Red);
+                                result = 2;
+                            }
                         }
                     }
                 }
 
             if (!quiet && count == 0)
-                PrintLine("No matching files found.");
+            {
+                PrintLine("No matching files found, nothing done.");
+                result = 8;
+            }
+
+            return result;
         }
 
         static void Print(string text, ConsoleColor color = ConsoleColor.Black)
@@ -170,8 +195,9 @@ namespace ZHash
             return null;
         }
 
-        static void HashStdin()
+        static int HashStdin()
         {
+            int result = 0;
             try
             {
                 if (!Console.IsInputRedirected && !quiet)
@@ -186,7 +212,12 @@ namespace ZHash
                 if (Console.CursorLeft > 0) Console.WriteLine();
                 PrintLine($"{algo}:{Util.Hexify(hasher.Hash)}");
             }
-            catch { }
+            catch (Exception ex)
+            {
+                PrintDebug($"Exception processing STDIN:\n{ex.Message}");
+                result = 99;
+            }
+            return result;
         }
 
         static byte[] ComputeHash(string path, CmdOption algo)
@@ -213,14 +244,21 @@ namespace ZHash
             return null;
         }
 
-        static void Register()
+        static int Register()
         {
+            int result = 0;
             string ext = CmdLine.Paths.Count > 0 ? CmdLine.Paths[0] : Constants.ZHEXT;
 
             if (CmdLine.Paths.Count > 1)
+            {
                 Console.WriteLine("Please register only one extension at a time");
+                result = 7;
+            }
             else if (!Regex.IsMatch(ext, @"^\.?\w+$"))
+            {
                 Console.WriteLine($"Cannot register invalid extension: {ext}");
+                result = 7;
+            }
             else
             {
                 try
@@ -259,8 +297,10 @@ namespace ZHash
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Failed to register extension '{ext}':\n{ex.Message}");
+                    result = 99;
                 }
             }
+            return result;
         }
     }
 }

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace ZHash
 {
     public enum CmdOption { Help, Compute, Update, Verify, Stdin, Register,
-        Debug, Wait, New, Refresh, Exclude, Subs, File, Local, Purge,
+        Debug, Wait, WaitIf, New, Refresh, Exclude, Subs, File, Local, Purge,
         Hide, Syshide, Absolute, Quiet, MD5, SHA1, SHA256 }
 
     internal static class CmdLine
@@ -26,7 +26,7 @@ namespace ZHash
         static Dictionary<string, string> Aliases = new Dictionary<string, string>() {
             { "?", "help" }, { "v", "verify" }, { "u", "update" }, { "c", "compute" }, { "i", "stdin" },
             { "s", "subs" }, {"x", "Exclude" }, { "f", "File" }, { "l", "local" }, { "q", "quiet" }, 
-            { "n", "new" }, { "r", "refresh" }, { "w", "wait" }, { "reg", "register" },
+            { "n", "new" }, { "r", "refresh" }, { "w", "wait" }, { "wi", "waitif" },{ "reg", "register" },
             { "p", "purge" }, { "h", "hide" }, { "hs", "syshide" },{ "a", "absolute" }, { "abs", "absolute" }, { "d", "debug" },
             { "1", "sha1" }, { "2", "sha256" }, { "m", "md5" }, { "5", "md5" },
         };
@@ -100,6 +100,7 @@ namespace ZHash
     -q, -quiet      : quiet mode, suppresses console output
     -d, -debug      : print some debug info
     -w, -wait       : wait for keypress before exiting
+    -wi, -waitif    : wait for keypress before exiting IF there's an error
 
   NOTES:
   > Multiple files, folders, masks and -x exclusions can be provided
@@ -114,7 +115,7 @@ namespace ZHash
   > The -reg option registers the an extension to run a ZHash verify.
     An alternate extension can be registered with '-reg .ext'
     Additional options can be included on the registration. Example:
-      zhash -reg .chk -w -s 
+      zhash -reg .chk -wi -s
 ";
             help = help.Replace("zhash.zh", Constants.ZHFILE);
             help = help.Replace(".zh", Constants.ZHEXT);
