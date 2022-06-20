@@ -20,6 +20,7 @@ Run ZHash -? to get the following help text:
     -u, -update     : Update hashes in zhash.zh, same as -c -f zhash.zh
     -v, -verify     : verify hashes of files already in zhash.zh
     -i, -stdin      : compute hash for stdin data; input files are ignored
+    -b, -bench      : benchmark storage and CPU hashing speed
         -reg [.ext] : register shell extension to verify .zh files
 
   HASH FUNCTION:
