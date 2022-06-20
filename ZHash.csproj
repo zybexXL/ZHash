@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Benchmark.cs" />
     <Compile Include="CmdLine.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Util.cs" />

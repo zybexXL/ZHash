@@ -14,7 +14,7 @@ namespace ZHash
 {
     class Program
     {
-        static Version version = new Version(1, 0, 5);
+        static Version version = new Version(1, 0, 6);
         static ConsoleColor DefaultColor = Console.ForegroundColor;
 
         static bool quiet;
@@ -53,6 +53,10 @@ namespace ZHash
 
                     case CmdOption.Register:
                         result = Register();
+                        break;
+
+                    case CmdOption.Bench:
+                        result = Benchmark.Bench();
                         break;
 
                 }
@@ -167,7 +171,7 @@ namespace ZHash
             return result;
         }
 
-        static void Print(string text, ConsoleColor color = ConsoleColor.Black)
+        internal static void Print(string text, ConsoleColor color = ConsoleColor.Black)
         {
             if (color == ConsoleColor.Black) color = DefaultColor;
             Console.ForegroundColor = color;
@@ -179,12 +183,12 @@ namespace ZHash
             if (DEBUG) Print(text + Environment.NewLine, ConsoleColor.DarkGray);
         }
 
-        static void PrintLine(string text, ConsoleColor color = ConsoleColor.Black)
+        internal static void PrintLine(string text, ConsoleColor color = ConsoleColor.Black)
         {
             Print(text + Environment.NewLine, color);
         }
 
-        static HashAlgorithm GetHasher(CmdOption hash)
+        internal static HashAlgorithm GetHasher(CmdOption hash)
         {
             switch (hash)
             {
@@ -234,6 +238,7 @@ namespace ZHash
                 if (DEBUG)
                 {
                     long KB = fi.Length / 1024;
+                    if (KB == 0) KB = 1;
                     double secs = sw.ElapsedMilliseconds/1000.0;
                     if (secs == 0) secs = 1;
                     PrintDebug($"\n** Hashed {KB} KB in {secs:f2} seconds = {KB/secs:f2} KB/sec");

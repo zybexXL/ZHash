@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ZHash
 {
-    public enum CmdOption { Help, Compute, Update, Verify, Stdin, Register,
+    public enum CmdOption { Help, Compute, Update, Verify, Stdin, Register, Bench,
         Debug, Wait, WaitIf, New, Refresh, Exclude, Subs, File, Local, Purge,
         Hide, Syshide, Absolute, Quiet, MD5, SHA1, SHA256 }
 
@@ -24,8 +24,8 @@ namespace ZHash
         public static CmdOption RunMode = CmdOption.Help;
 
         static Dictionary<string, string> Aliases = new Dictionary<string, string>() {
-            { "?", "help" }, { "v", "verify" }, { "u", "update" }, { "c", "compute" }, { "i", "stdin" },
-            { "s", "subs" }, {"x", "Exclude" }, { "f", "File" }, { "l", "local" }, { "q", "quiet" }, 
+            { "?", "help" }, { "v", "verify" }, { "u", "update" }, { "c", "compute" }, { "i", "stdin" }, { "b", "bench" },
+            { "s", "subs" }, {"x", "exclude" }, { "f", "file" }, { "l", "local" }, { "q", "quiet" }, 
             { "n", "new" }, { "r", "refresh" }, { "w", "wait" }, { "wi", "waitif" },{ "reg", "register" },
             { "p", "purge" }, { "h", "hide" }, { "hs", "syshide" },{ "a", "absolute" }, { "abs", "absolute" }, { "d", "debug" },
             { "1", "sha1" }, { "2", "sha256" }, { "m", "md5" }, { "5", "md5" },
@@ -73,6 +73,7 @@ namespace ZHash
     -u, -update     : Update hashes in zhash.zh, same as -c -f zhash.zh
     -v, -verify     : verify hashes of files already in zhash.zh
     -i, -stdin      : compute hash for stdin data; input files are ignored
+    -b, -bench      : benchmark storage and CPU hashing speed
         -reg [.ext] : register shell extension to verify .zh files
 
   HASH FUNCTION:
@@ -163,7 +164,7 @@ namespace ZHash
 
         static bool ValidateArgs()
         {
-            CmdOption[] modes = new CmdOption[] { CmdOption.Compute, CmdOption.Update, CmdOption.Verify, CmdOption.Stdin, CmdOption.Register };
+            CmdOption[] modes = new CmdOption[] { CmdOption.Compute, CmdOption.Update, CmdOption.Verify, CmdOption.Stdin, CmdOption.Register, CmdOption.Bench};
             CmdOption[] funcs = new CmdOption[] { CmdOption.SHA1, CmdOption.SHA256, CmdOption.MD5, };
 
             int nFuncs = countOptions(funcs);

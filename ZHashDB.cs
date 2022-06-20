@@ -39,7 +39,7 @@ namespace ZHash
                         hashes[item.itemId] = item;
                 }
                 
-                Program.PrintDebug($":: Loaded {hashes.Count} entried from {dbPath}");
+                Program.PrintDebug($":: Loaded {hashes.Count} entries from {dbPath}");
                 return true;
             }
             catch (Exception ex)
@@ -107,7 +107,7 @@ namespace ZHash
                 if (syshide) attr |= FileAttributes.System;
                 File.SetAttributes(dbPath, FileAttributes.Hidden | FileAttributes.Archive);
 
-                Program.PrintDebug($":: Wrote {hashes.Count} entried to {dbPath}");
+                Program.PrintDebug($":: Wrote {hashes.Count} entries to {dbPath}");
                 isDirty = false;
                 return true;
             }
