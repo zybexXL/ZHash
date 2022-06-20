@@ -28,7 +28,7 @@ namespace ZHash
         {
             long bufSize = 1 << 20;
             byte[] buffer = new byte[bufSize];
-            int duration = 3000;
+            int duration = 2000;
             var hashes = new CmdOption[] { CmdOption.SHA256, CmdOption.SHA1, CmdOption.MD5 };
 
             try
@@ -62,7 +62,7 @@ namespace ZHash
         {
             long bufSize = 1 << 20;
             byte[] buffer = new byte[bufSize];
-            int duration = 3000;
+            int duration = 2000;
             string testFile = "$$zhashTest$$.tmp";
 
             try
@@ -74,16 +74,16 @@ namespace ZHash
                 path = Path.GetFullPath(path);
                 testFile = Path.Combine(path, testFile);
 
-                Program.PrintLine($"\nStorage speed, sequential:");
+                Program.PrintLine($"\nStorage sequential speed:");
 
-
-                FileOptions fo = 0;
-                unchecked { fo = (FileOptions)(FILE_FLAG_WRITE_THROUGH + FILE_FLAG_NO_BUFFERING); }
-                using (var stream = File.Create(testFile, 1 << 20, fo))
+                // write test
+                FileOptions flags = 0;
+                unchecked { flags = (FileOptions)(FILE_FLAG_WRITE_THROUGH + FILE_FLAG_NO_BUFFERING); }
+                using (var stream = File.Create(testFile, 1 << 20, flags))
                 {
                     Stopwatch sw = Stopwatch.StartNew();
                     int count = 0;
-                    while (sw.ElapsedMilliseconds < duration)
+                    while (sw.ElapsedMilliseconds < duration * 2)
                     {
                         stream.Write(buffer, 0, buffer.Length);
                         count++;
@@ -95,6 +95,7 @@ namespace ZHash
                     Program.PrintLine($"  Write : {speed:f2} MB/sec");
                 }
 
+                // read test
                 using (Stream stream = new FileStream(testFile, FileMode.Open, FileAccess.Read, FileShare.None, 1 << 20, true))
                 {
                     Stopwatch sw = Stopwatch.StartNew();
