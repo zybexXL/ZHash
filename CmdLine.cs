@@ -178,7 +178,7 @@ namespace ZHash
             RunMode = FirstOrDefault(modes);
 
             // default input path
-            if (Paths.Count == 0) Paths.Add(RunMode == CmdOption.Register ? Constants.ZHEXT : ".");
+            if (Paths.Count == 0 && RunMode != CmdOption.Bench) Paths.Add(RunMode == CmdOption.Register ? Constants.ZHEXT : ".");
             
             // default hash file
             if (!hasOption(CmdOption.File) && !hasOption(CmdOption.Compute))

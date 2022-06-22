@@ -75,5 +75,18 @@ namespace ZHash
 
             return new Regex(mask, ignoreCase ? RegexOptions.IgnoreCase : RegexOptions.None);
         }
+
+        public static bool isWritable(string path)
+        {
+            int block = 4096;
+            try
+            {
+                path = Path.Combine(path, "$$writeTest$$.tmp");
+                using (var stream = File.Create(path, block, FileOptions.DeleteOnClose))
+                    stream.Write(new byte[block], 0, block);
+            }
+            catch { return false; }
+            return true;
+        }
     }
 }

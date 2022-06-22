@@ -8,13 +8,14 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ZHash
 {
     class Program
     {
-        static Version version = new Version(1, 0, 6);
+        static Version version = new Version(1, 0, 7);
         static ConsoleColor DefaultColor = Console.ForegroundColor;
 
         static bool quiet;
@@ -62,6 +63,12 @@ namespace ZHash
                 }
                 manager.Close();
                 Console.ResetColor();
+            }
+
+            if (CmdLine.hasOption(CmdOption.WaitIf) && result == 0)
+            {
+                //Console.WriteLine("\nAll done, no errors");
+                Thread.Sleep(2000);
             }
 
             if (CmdLine.hasOption(CmdOption.Wait) || (CmdLine.hasOption(CmdOption.WaitIf) && result != 0))
