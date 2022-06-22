@@ -5,7 +5,7 @@ File hashing command-line tool with many features:
 - Accepts STDIN piped input
 - Multiple file/folders/masks and exclusion masks
 - Recursive subfolder processing
-- Single hash DB file or one file per subfolder
+- Single hash DB file or one file per folder
 - Extension shell handler to verify files on double-click
 
 ## Usage
