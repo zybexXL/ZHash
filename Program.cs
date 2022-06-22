@@ -248,7 +248,7 @@ namespace ZHash
                     if (KB == 0) KB = 1;
                     double secs = sw.ElapsedMilliseconds/1000.0;
                     if (secs == 0) secs = 1;
-                    PrintDebug($"\n** Hashed {KB} KB in {secs:f2} seconds = {KB/secs:f2} KB/sec");
+                    PrintDebug($"\n** Hashed {KB} KiB in {secs:f2} seconds = {KB/secs:f2} KiB/sec");
                 }
                 return hasher.Hash;
             }
