@@ -15,7 +15,7 @@ namespace ZHash
 {
     class Program
     {
-        static Version version = new Version(1, 0, 7);
+        static Version version = new Version(1, 0, 8);
         static ConsoleColor DefaultColor = Console.ForegroundColor;
 
         static bool quiet;
@@ -87,7 +87,11 @@ namespace ZHash
             bool onlyNew = CmdLine.hasOption(CmdOption.New);
             bool refresh = CmdLine.hasOption(CmdOption.Refresh);
 
+            bool cancel = false;
+            Console.CancelKeyPress += (o, args) => { args.Cancel = true; cancel = true; };
+
             foreach (var path in CmdLine.Paths)
+            {
                 foreach (var file in manager.EnumerateFiles(path, CmdLine.Excludes))
                 {
                     if (file.Name.ToLower() == dbName && path.ToLower() != dbName)
@@ -116,8 +120,15 @@ namespace ZHash
                     }
                     if (!quiet || Console.IsOutputRedirected)
                         PrintLine(item.ToString(), item.isInvalid ? ConsoleColor.Red : ConsoleColor.Cyan);
-                }
 
+                    if (cancel) break;
+                }
+                if (cancel)
+                {
+                    PrintLine("\nCTRL+C pressed", ConsoleColor.Red); 
+                    break;
+                }
+            }
             if (!quiet && count == 0)
             {
                 PrintLine("No matching files found, nothing done.");
@@ -238,10 +249,60 @@ namespace ZHash
                 FileInfo fi = new FileInfo(path);
                 Stopwatch sw = DEBUG ? Stopwatch.StartNew() : null;
                 HashAlgorithm hasher = GetHasher(algo);
-                using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1 << 20, true))
-                    hasher.ComputeHash(stream);
 
-                sw?.Stop();
+                int bufSize = 1 << 20;
+                int queues = 4;
+                byte[] bufferA = new byte[bufSize * queues];
+                byte[] bufferB = new byte[bufSize * queues];
+                Task<int>[] readers = new Task<int>[4];
+
+                using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, bufSize, true))
+                {
+                    // read ahead into bufferA
+                    for (int i = 0; i < queues; i++)
+                        readers[i] = stream.ReadAsync(bufferA, i * bufSize, bufSize);
+                    
+                    int running = queues;
+                    while (running > 0)
+                    {
+                        // process bufferA, read ahead into bufferB
+                        for (int i = 0; i < queues; i++)
+                        {
+                            if (readers[i] == null) continue;
+                            readers[i].Wait();
+                            int bytes = readers[i].Result;
+                            if (bytes == bufSize)
+                                readers[i] = stream.ReadAsync(bufferB, i * bufSize, bufSize);
+                            else
+                            {
+                                running--;
+                                readers[i] = null;
+                            }
+                            if (bytes > 0)
+                                hasher.TransformBlock(bufferA, i * bufSize, bytes, bufferA, i * bufSize);
+                        }
+
+                        // process bufferB, read ahead into bufferA
+                        for (int i = 0; i < queues; i++)
+                        {
+                            if (readers[i] == null) continue;
+                            readers[i].Wait();
+                            int bytes = readers[i].Result;
+                            if (bytes == bufSize)
+                                readers[i] = stream.ReadAsync(bufferA, i * bufSize, bufSize);
+                            else
+                            {
+                                running--;
+                                readers[i] = null;
+                            }
+                            if (bytes > 0)
+                                hasher.TransformBlock(bufferB, i * bufSize, bytes, bufferB, i * bufSize);
+                        }
+                    }
+                }
+                
+                hasher.TransformFinalBlock(bufferA, 0, 0);
+                sw.Stop();
                 if (DEBUG)
                 {
                     long KB = fi.Length / 1024;

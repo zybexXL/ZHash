@@ -77,7 +77,7 @@ namespace ZHash
                     }
                     sw?.Stop();
                     double speed = Speed(bufSize * count, sw.ElapsedMilliseconds);
-                    Program.PrintLine($"  {algo,6} : {speed:f2} MiB/sec");
+                    Program.PrintLine($"  {algo,6} : {speed,7:f2} MiB/sec");
                 }
             }
             catch (Exception ex)
@@ -120,19 +120,19 @@ namespace ZHash
 
                 // write test
                 double MBps = BenchWriteAsync(testFile, bufSize, duration, queues, maxFileSize);
-                Program.PrintLine($"   Write : {MBps:f2} MiB/sec");
+                Program.PrintLine($"   Write : {MBps,7:f2} MiB/sec");
 
                 // let disk flush its internal cache
                 Thread.Sleep(2000);
 
                 // read test
                 MBps = BenchReadAsync(testFile, bufSize, duration, queues);
-                Program.PrintLine($"    Read : {MBps:f2} MiB/sec");
+                Program.PrintLine($"    Read : {MBps,7:f2} MiB/sec");
 
                 // read test raw
                 //Thread.Sleep(2000);
                 //MBps = BenchReadRawAsync(testFile, bufSize, duration, queues);
-                //Program.PrintLine($"Raw Read : {MBps:f2} MiB/sec");
+                //Program.PrintLine($"Raw Read : {MBps,7:f2} MiB/sec");
             }
             catch (Exception ex)
             {
