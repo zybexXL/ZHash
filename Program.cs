@@ -302,7 +302,7 @@ namespace ZHash
                 }
                 
                 hasher.TransformFinalBlock(bufferA, 0, 0);
-                sw.Stop();
+                sw?.Stop();
                 if (DEBUG)
                 {
                     long KB = fi.Length / 1024;
